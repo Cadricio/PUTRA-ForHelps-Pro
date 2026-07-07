@@ -1,0 +1,6 @@
+streamlit
+rasterio
+numpy
+scipy
+streamlit-image-coordinates
+Pillow
