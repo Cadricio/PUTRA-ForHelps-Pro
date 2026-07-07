@@ -88,4 +88,4 @@ if uploaded_file:
             
             x = int(coords["x"] * (data_w / img_width))
             y = int(coords["y"] * (data_h / img_height))
-            x, y = min(max(x, 0), data
+            x, y = min(max(x, 0), data_w - 1), min(max(y, 0), data_h - 1)
