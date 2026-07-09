@@ -117,7 +117,6 @@ if uploaded_file:
             st.markdown(f"**Targeted Pixel:** (X: {x}, Y: {y})")
             
             # --- Advanced Band Extraction for PlanetScope ---
-            # Automatically scales 16-bit uint down to true 0.0-1.0 reflectance
             if num_bands == 8:
                 b_blue  = np.clip((float(data[1, y, x]) / 10000.0), 0.0, 1.0)
                 b_green = np.clip((float(data[3, y, x]) / 10000.0), 0.0, 1.0)
@@ -145,3 +144,57 @@ if uploaded_file:
 
             if site_type == "Urban / Fragmented":
                 index_choice = st.radio("Toggle Recommended Urban Index:", ["SAVI", "MSAVI"], horizontal=True)
+                primary_vi_name = index_choice
+                savi = ((b_nir - b_red) / (b_nir + b_red + 0.5 + 1e-8)) * 1.5
+                msavi = 0.5 * (2 * b_nir + 1 - np.sqrt(abs((2 * b_nir + 1)**2 - 8 * (b_nir - b_red))))
+                primary_vi_val = savi if index_choice == "SAVI" else msavi
+                
+            elif site_type == "Recreational / Moderate":
+                index_choice = st.radio("Toggle Recommended Recreational Index:", ["NDVI", "VARI"], horizontal=True)
+                primary_vi_name = index_choice
+                ndvi = (b_nir - b_red) / (b_nir + b_red + 1e-8)
+                vari_denom = (b_green + b_red - b_blue + 1e-8)
+                vari = (b_green - b_red) / vari_denom if vari_denom != 0 else 0.0
+                primary_vi_val = ndvi if index_choice == "NDVI" else vari
+                
+            else:
+                index_choice = st.radio("Toggle Recommended Forest Index:", ["NDRE", "CIRE"], horizontal=True)
+                primary_vi_name = index_choice
+                ndre = (b_nir - b_re) / (b_nir + b_re + 1e-8)
+                cire = (b_nir / (b_re + 1e-8)) - 1.0
+                primary_vi_val = ndre if index_choice == "NDRE" else cire
+
+            st.info(f"📊 **Active Predictor ({primary_vi_name}):** {round(primary_vi_val, 4)}")
+
+            # --- Safety Threshold: Unblocked Warning ---
+            if primary_vi_val < 0.05:
+                st.warning("⚠️ **Low Spectral Signature Detected.** This pixel resembles shadow or exposed soil. Raw math is being processed below for testing.")
+            
+            # --- Step 5: Fungal Diversity Output (Linear Engine) ---
+            # Now outside the strict 'else' block, so it ALWAYS renders!
+            st.markdown("#### Fungal Community Profiling Estimates")
+            col_a, col_b = st.columns(2)
+            
+            shannon_m = fungal_models["Shannon"][primary_vi_name]["m"]
+            shannon_c = fungal_models["Shannon"][primary_vi_name]["c"]
+            shannon_val = (shannon_m * primary_vi_val) + shannon_c
+            
+            richness_m = fungal_models["Richness"][primary_vi_name]["m"]
+            richness_c = fungal_models["Richness"][primary_vi_name]["c"]
+            richness_val = (richness_m * primary_vi_val) + richness_c
+            
+            simpson_m = fungal_models["Simpson"][primary_vi_name]["m"]
+            simpson_c = fungal_models["Simpson"][primary_vi_name]["c"]
+            simpson_val = (simpson_m * primary_vi_val) + simpson_c
+            
+            evenness_m = fungal_models["Evenness"][primary_vi_name]["m"]
+            evenness_c = fungal_models["Evenness"][primary_vi_name]["c"]
+            evenness_val = (evenness_m * primary_vi_val) + evenness_c
+            
+            col_a.metric("Shannon (H')", round(shannon_val, 4))
+            col_a.metric("Simpson (1-D)", round(simpson_val, 4))
+            col_b.metric("Species Richness (S)", round(richness_val, 4))
+            col_b.metric("Species Evenness (J')", round(evenness_val, 4))
+else:
+    # Default landing screen
+    st.info("👈 Please define the ecosystem context and upload a multispectral TIFF file via the sidebar to begin.")
