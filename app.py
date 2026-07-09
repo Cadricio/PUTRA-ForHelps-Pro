@@ -8,11 +8,40 @@ from PIL import Image
 st.set_page_config(page_title="PUTRA ForHelps", layout="wide", initial_sidebar_state="expanded")
 
 # --- PART A: Thesis Regression Constants (y = mx + c) ---
+# Statistically corrected (VI on X-axis, Diversity on Y-axis)
 fungal_models = {
-    "Shannon": {"m": 0.0632, "c": 0.584},
-    "Richness": {"m": 0.0510, "c": 0.320},
-    "Simpson": {"m": 0.0712, "c": 0.410},
-    "Evenness": {"m": 0.0425, "c": 0.150}
+    "Shannon": {
+        "NDVI": {"m": 1.8543, "c": -0.6830},
+        "SAVI": {"m": 1.2367, "c": -0.6834},
+        "MSAVI": {"m": 3.1055, "c": -1.9543},
+        "VARI": {"m": 0.9631, "c": 0.5954},
+        "NDRE": {"m": 1.1079, "c": 0.1769},
+        "CIRE": {"m": 0.0516, "c": 0.6926}
+    },
+    "Simpson": {
+        "NDVI": {"m": 1.9919, "c": -0.8033},
+        "SAVI": {"m": 1.3284, "c": -0.8036},
+        "MSAVI": {"m": 3.3402, "c": -2.1728},
+        "VARI": {"m": 1.0408, "c": 0.5681},
+        "NDRE": {"m": 1.1765, "c": 0.1293},
+        "CIRE": {"m": 0.0546, "c": 0.6777}
+    },
+    "Richness": {
+        "NDVI": {"m": 43.9998, "c": -24.8319},
+        "SAVI": {"m": 29.3411, "c": -24.8365},
+        "MSAVI": {"m": 70.9345, "c": -52.4702},
+        "VARI": {"m": 18.8463, "c": 6.7589},
+        "NDRE": {"m": 35.0274, "c": -10.1097},
+        "CIRE": {"m": 1.7435, "c": 5.7449}
+    },
+    "Evenness": {
+        "NDVI": {"m": 0.5823, "c": 0.3211},
+        "SAVI": {"m": 0.3884, "c": 0.3209},
+        "MSAVI": {"m": 1.0414, "c": -0.1390},
+        "VARI": {"m": 0.3988, "c": 0.6923},
+        "NDRE": {"m": 0.1377, "c": 0.7278},
+        "CIRE": {"m": 0.0037, "c": 0.8027}
+    }
 }
 
 # --- PART B: Sidebar UI - Ecosystem Context & File Upload ---
@@ -116,46 +145,3 @@ if uploaded_file:
 
             if site_type == "Urban / Fragmented":
                 index_choice = st.radio("Toggle Recommended Urban Index:", ["SAVI", "MSAVI"], horizontal=True)
-                primary_vi_name = index_choice
-                savi = ((b_nir - b_red) / (b_nir + b_red + 0.5 + 1e-8)) * 1.5
-                msavi = 0.5 * (2 * b_nir + 1 - np.sqrt(abs((2 * b_nir + 1)**2 - 8 * (b_nir - b_red))))
-                primary_vi_val = savi if index_choice == "SAVI" else msavi
-                
-            elif site_type == "Recreational / Moderate":
-                index_choice = st.radio("Toggle Recommended Recreational Index:", ["NDVI", "VARI"], horizontal=True)
-                primary_vi_name = index_choice
-                ndvi = (b_nir - b_red) / (b_nir + b_red + 1e-8)
-                vari_denom = (b_green + b_red - b_blue + 1e-8)
-                vari = (b_green - b_red) / vari_denom if vari_denom != 0 else 0.0
-                primary_vi_val = ndvi if index_choice == "NDVI" else vari
-                
-            else:
-                index_choice = st.radio("Toggle Recommended Forest Index:", ["NDRE", "CIRE"], horizontal=True)
-                primary_vi_name = index_choice
-                ndre = (b_nir - b_re) / (b_nir + b_re + 1e-8)
-                cire = (b_nir / (b_re + 1e-8)) - 1.0
-                primary_vi_val = ndre if index_choice == "NDRE" else cire
-
-            st.info(f"📊 **Active Predictor ({primary_vi_name}):** {round(primary_vi_val, 4)}")
-
-            # --- Safety Threshold: Out-of-Bounds Shadow/Noise Rejection ---
-            if primary_vi_val < 0.05:
-                st.error("⚠️ **Anomalous Spectral Signature Detected.** The targeted coordinate indicates a non-vegetative surface, exposed infrastructure, or deep canopy shadow. Fungal diversity cannot be accurately estimated.")
-            else:
-                # --- Step 5: Fungal Diversity Output (Linear Engine) ---
-                st.markdown("#### Fungal Community Profiling Estimates")
-                col_a, col_b = st.columns(2)
-                
-                # Calculate using the dynamically selected index from the toggle
-                shannon_val = (fungal_models["Shannon"]["m"] * primary_vi_val) + fungal_models["Shannon"]["c"]
-                richness_val = (fungal_models["Richness"]["m"] * primary_vi_val) + fungal_models["Richness"]["c"]
-                simpson_val = (fungal_models["Simpson"]["m"] * primary_vi_val) + fungal_models["Simpson"]["c"]
-                evenness_val = (fungal_models["Evenness"]["m"] * primary_vi_val) + fungal_models["Evenness"]["c"]
-                
-                col_a.metric("Shannon (H')", round(shannon_val, 4))
-                col_a.metric("Simpson (1-D)", round(simpson_val, 4))
-                col_b.metric("Species Richness (S)", round(richness_val, 4))
-                col_b.metric("Species Evenness (J')", round(evenness_val, 4))
-else:
-    # Default landing screen
-    st.info("👈 Please define the ecosystem context and upload a multispectral TIFF file via the sidebar to begin.")
