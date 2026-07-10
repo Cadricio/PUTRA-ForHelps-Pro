@@ -8,39 +8,39 @@ from PIL import Image
 st.set_page_config(page_title="PUTRA ForHelps", layout="wide", initial_sidebar_state="expanded")
 
 # --- PART A: Thesis Regression Constants (y = mx + c) ---
-# Statistically corrected (VI on X-axis, Diversity on Y-axis)
+# Values extracted directly from final Excel aggregated scatter plots
 fungal_models = {
     "Shannon": {
-        "NDVI": {"m": 1.8543, "c": -0.6830},
-        "SAVI": {"m": 1.2367, "c": -0.6834},
-        "MSAVI": {"m": 3.1055, "c": -1.9543},
-        "VARI": {"m": 0.9631, "c": 0.5954},
-        "NDRE": {"m": 1.1079, "c": 0.1769},
-        "CIRE": {"m": 0.0516, "c": 0.6926}
+        "NDVI": {"m": 4.97, "c": -0.901},
+        "SAVI": {"m": 3.07, "c": -0.593},
+        "MSAVI": {"m": 7.98, "c": -4.0},
+        "VARI": {"m": 2.79, "c": 2.46},
+        "NDRE": {"m": 2.74, "c": 1.56},
+        "CIRE": {"m": 0.132, "c": 2.81}
     },
     "Simpson": {
-        "NDVI": {"m": 1.9919, "c": -0.8033},
-        "SAVI": {"m": 1.3284, "c": -0.8036},
-        "MSAVI": {"m": 3.3402, "c": -2.1728},
-        "VARI": {"m": 1.0408, "c": 0.5681},
-        "NDRE": {"m": 1.1765, "c": 0.1293},
-        "CIRE": {"m": 0.0546, "c": 0.6777}
+        "NDVI": {"m": 0.273, "c": 0.715},
+        "SAVI": {"m": 0.175, "c": 0.725},
+        "MSAVI": {"m": 0.451, "c": 0.534},
+        "VARI": {"m": 0.154, "c": 0.899},
+        "NDRE": {"m": 0.143, "c": 0.855},
+        "CIRE": {"m": 0.0067, "c": 0.921}
     },
     "Richness": {
-        "NDVI": {"m": 43.9998, "c": -24.8319},
-        "SAVI": {"m": 29.3411, "c": -24.8365},
-        "MSAVI": {"m": 70.9345, "c": -52.4702},
-        "VARI": {"m": 18.8463, "c": 6.7589},
-        "NDRE": {"m": 35.0274, "c": -10.1097},
-        "CIRE": {"m": 1.7435, "c": 5.7449}
+        "NDVI": {"m": 348.0, "c": -238.0},
+        "SAVI": {"m": 176.0, "c": -166.0},
+        "MSAVI": {"m": 479.0, "c": -382.0},
+        "VARI": {"m": 193.0, "c": -2.08},
+        "NDRE": {"m": 248.0, "c": -102.0},
+        "CIRE": {"m": 13.3, "c": 5.61}
     },
     "Evenness": {
-        "NDVI": {"m": 0.5823, "c": 0.3211},
-        "SAVI": {"m": 0.3884, "c": 0.3209},
-        "MSAVI": {"m": 1.0414, "c": -0.1390},
-        "VARI": {"m": 0.3988, "c": 0.6923},
-        "NDRE": {"m": 0.1377, "c": 0.7278},
-        "CIRE": {"m": 0.0037, "c": 0.8027}
+        "NDVI": {"m": 0.0132, "c": 0.813},
+        "SAVI": {"m": 0.124, "c": 0.666},
+        "MSAVI": {"m": 0.256, "c": 0.590},
+        "VARI": {"m": 0.0151, "c": 0.820},
+        "NDRE": {"m": -0.158, "c": 0.927},
+        "CIRE": {"m": -0.0115, "c": 0.870}
     }
 }
 
@@ -171,7 +171,6 @@ if uploaded_file:
                 st.warning("⚠️ **Low Spectral Signature Detected.** This pixel resembles shadow or exposed soil. Raw math is being processed below for testing.")
             
             # --- Step 5: Fungal Diversity Output (Linear Engine) ---
-            # Now outside the strict 'else' block, so it ALWAYS renders!
             st.markdown("#### Fungal Community Profiling Estimates")
             col_a, col_b = st.columns(2)
             
