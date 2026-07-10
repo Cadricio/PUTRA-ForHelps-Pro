@@ -176,19 +176,20 @@ if uploaded_file:
             
             shannon_m = fungal_models["Shannon"][primary_vi_name]["m"]
             shannon_c = fungal_models["Shannon"][primary_vi_name]["c"]
-            shannon_val = (shannon_m * primary_vi_val) + shannon_c
+            # Added max(0.0, ...) to prevent biological extrapolation errors (negative numbers)
+            shannon_val = max(0.0, (shannon_m * primary_vi_val) + shannon_c)
             
             richness_m = fungal_models["Richness"][primary_vi_name]["m"]
             richness_c = fungal_models["Richness"][primary_vi_name]["c"]
-            richness_val = (richness_m * primary_vi_val) + richness_c
+            richness_val = max(0.0, (richness_m * primary_vi_val) + richness_c)
             
             simpson_m = fungal_models["Simpson"][primary_vi_name]["m"]
             simpson_c = fungal_models["Simpson"][primary_vi_name]["c"]
-            simpson_val = (simpson_m * primary_vi_val) + simpson_c
+            simpson_val = max(0.0, (simpson_m * primary_vi_val) + simpson_c)
             
             evenness_m = fungal_models["Evenness"][primary_vi_name]["m"]
             evenness_c = fungal_models["Evenness"][primary_vi_name]["c"]
-            evenness_val = (evenness_m * primary_vi_val) + evenness_c
+            evenness_val = max(0.0, (evenness_m * primary_vi_val) + evenness_c)
             
             col_a.metric("Shannon (H')", round(shannon_val, 4))
             col_a.metric("Simpson (1-D)", round(simpson_val, 4))
